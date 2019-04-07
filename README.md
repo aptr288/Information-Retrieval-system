@@ -28,7 +28,7 @@ Query terms are processed in same manners as documents and cosine similarity is 
 * The documents with its score relavency is displayed and the performence of the system is also displayed. 
 ![alt text](https://github.com/aptr288/Information-Retrieval-system/blob/master/files/Example.jpg)
 
-## Tools and Dependencies  
+## Software and files info  
 
 * Implementation is done in python(3.6)
 * Porter stemmer is used from nltk library
