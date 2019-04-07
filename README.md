@@ -8,7 +8,8 @@ Forward Index and Inverted index are built from given documents. Sample shown be
 ![alt text](https://github.com/aptr288/Information-Retrieval-system/blob/master/files/Inverted%20and%20forward%20Index.jpg)
 * **Query Processing** <br/>
 Query terms are processed in same manners as documents and cosine similarity is calculated for each keyword present in query with  relavent documents using forward and inverted index. Df and Idf values are calculated to better represent the words which carry more relevence and cosine similarity socre is calculated. Which finally results highest score for most relavent document for a given query. 
-```idf = math.log(N / df, 10)
+```
+   idf = math.log(N / df, 10)
    tfidf = ((tfD * idf) * (tfQ * idf))
    score[inverKey] += (tfidf / normalizedDoc[inverKey])
 ```
