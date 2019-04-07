@@ -4,10 +4,14 @@ Each document is parsed from XML fromate it was saved and processed for removing
 words with numerics, **stopwords**. Then all words are converted to lower cases and **porter stemmer** is used to remove inflexional endings from words. These tokens are finally assigned a unique **word id**. 
 
 * **Indexing** <br/>
-Forward Index and Inverted index are built from given documents.
+Forward Index and Inverted index are built from given documents. Sample shown below. 
 ![alt text](https://github.com/aptr288/Information-Retrieval-system/blob/master/files/Inverted%20and%20forward%20Index.jpg)
 * **Query Processing** <br/>
-
+Query terms are processed in same manners as documents and cosine similarity is calculated for each keyword present in query with  relavent documents using forward and inverted index. Df and Idf values are calculated to better represent the words which carry more relevence and cosine similarity socre is calculated. Which finally results highest score for most relavent document for a given query. 
+```idf = math.log(N / df, 10)
+   tfidf = ((tfD * idf) * (tfQ * idf))
+   score[inverKey] += (tfidf / normalizedDoc[inverKey])
+```
 
 
 ## Execution Procedure 
@@ -23,6 +27,7 @@ Forward Index and Inverted index are built from given documents.
 * User can also provide combinations of query 1==> Title only,  2==> Narrative + Title , 3==> Desc + Title, 4==> All
 * The documents with its score relavency is displayed and the performence of the system is also displayed. 
 ![alt text](https://github.com/aptr288/Information-Retrieval-system/blob/master/files/Example.jpg)
+
 ## Tools and Dependencies  
 
 * Implementation is done in python(3.6)
@@ -30,34 +35,7 @@ Forward Index and Inverted index are built from given documents.
 * Got word tokens around 32602 and number of docs 5368
 * The stopwordlist.txt contains repeated words which carry less relavency information 
 
-*******************************************************************************************
 
-OnlyTitleResults.txt            ===> Documents with decreasing order of scores are displayed with unique rank for each query number for Title query only here
-titleWithDescriptionResults.txt ===> Title + Description query results are written here 
-titleWithNarrativeResults.txt   ===> Title + Narrative query results are written here 
-precesionRecallValues.txt       ===> all the precision and recall values are written here consolidatedly but every query has 
-                                     precision and recall values after it last relevant document. 
-
-
-
-
-
-
-
-
-
-
-## Important functions 
-
-
-
-* **calculate_Entropy.m** <br/>
-This function calculates the entropy for obtaining information gain
-``` 
-  A = p/(p+n);
-  B = n/(p+n);
-  Entropy = -A.*log2(A)-B.*log2(B);
-```
 
 
 
