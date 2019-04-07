@@ -20,12 +20,17 @@ sortedForwardIndex = {}
 normalizedDoc = {}
 query_forward_index_dict = {}
 score  = defaultdict(int)
-
-#Initializing the present to estimate the total time taken for execution
+currentDirectory = pathlib.Path('.')
+#Initializing the present time to estimate the total time taken for execution
 start_time = time.time()
 
+import os
+cwd = os.getcwd()
+
 # Loading all the stopwordlist elements in text file to a list
-with open('stopwordlist.txt', 'r') as f:
+path = str(cwd) + '\\files\\stopwordlist.txt'
+
+with open(path, 'r') as f:
     for line in f:
         for word in line.split():
             stopWordList.append(word)
@@ -81,7 +86,7 @@ def extractingdata(filepathdoc):
     return FinalWordList, docnumListForEachFile
 
 
-currentDirectory = pathlib.Path('.')
+
 # For loop iterates thorugh all the files from ft911_1 to ft9111_15
 extractedTextList = []
 extractedDocNumList = []
@@ -258,7 +263,7 @@ for key, value in sortedForwardIndex.items():
 #Extracting the query number and texts from each feilds like title, narrative and description
 totalDoc = ""
 queryNumber = []
-with open(str(currentDirectory) + '/Proj3/topics.txt', "r+") as fp:
+with open(str(currentDirectory) + '/files/topics.txt', "r+") as fp:
     line = fp.readline()
     counter = 1
     while line:
@@ -309,7 +314,7 @@ def extractDifferentQuery(TotalText):
 ###################################################################################################################
 
 # extracting the relavent elements from main.qerls file for calculating the precision and recall
-filepath = str(currentDirectory) + '/Proj3/main.qrels'
+filepath = str(currentDirectory) + '/files/main.qrels'
 referenceQueryDoc = []
 with open(filepath) as fp:
     line = fp.readline()
