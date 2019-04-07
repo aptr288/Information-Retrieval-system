@@ -1,4 +1,12 @@
 # Information Retrieval System 
+* **Parsing and Text processing** <br/>
+Each document is parsed from XML fromate it was saved and processed for removing irrelavent elements like **numerics**, 
+words with numerics, **stopwords**. Then all words are converted to lower cases and **porter stemmer** is used to remove inflexional endings from words. These tokens are finally assigned a unique **word id**. 
+
+* **Indexing** <br/>
+Forward Index and Inverted index are built from given documents.
+![alt text](https://github.com/aptr288/Information-Retrieval-system/blob/master/files/Inverted%20and%20forward%20Index.jpg)
+* **Query Processing** <br/>
 
 
 
