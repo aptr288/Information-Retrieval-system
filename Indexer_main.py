@@ -1,32 +1,34 @@
+import collections
 import pathlib
 import re
 from nltk.stem import PorterStemmer
-import collections
 from collections import defaultdict
+import collections
 import time
 import math
+from Forward_Index_Build import indexingEachTerm
+from Query_Extraction import extractDifferentQuery
 
 # Initialization of dictionaries and functions
-
-stopWordList = []
-word_dict = defaultdict(int)
 docNum_dict = {}
-forward_index_dict = {}
+word_dict = collections.defaultdict(int)
 inverted_index_dict = {}
-docCountForIndex = 1
+
 ps = PorterStemmer()
 sortedInvertedIndex = {}
 sortedForwardIndex = {}
 normalizedDoc = {}
-query_forward_index_dict = {}
+
 score  = defaultdict(int)
 currentDirectory = pathlib.Path('.')
 #Initializing the present time to estimate the total time taken for execution
 start_time = time.time()
-
+from Data_Parsing_and_Processing import extractingdata
 import os
 cwd = os.getcwd()
 
+stopWordList = []
+cwd = os.getcwd()
 # Loading all the stopwordlist elements in text file to a list
 path = str(cwd) + '\\files\\stopwordlist.txt'
 
@@ -36,63 +38,12 @@ with open(path, 'r') as f:
             stopWordList.append(word)
 
 
-# This  method is implemented for extracting both doc numbers and the text of each file in to lists
-def extractingdata(filepathdoc):
-    ps = PorterStemmer()
-    totalDoc = ""
-    FinalWordList = []
-    docnumListForEachFile = []
-    with open(filepathdoc) as fp:
-        line = fp.readline()
-        counter = 1
-        while line:
-            stripedString = line.strip() + " "
-            totalDoc = totalDoc + stripedString
-            if "<DOCNO>" in stripedString:
-                docnum = re.search(r'<DOCNO>(.*?)</DOCNO>', stripedString).group(1)
-                docnumListForEachFile.append(docnum)
-                counter = counter + 1
-            line = fp.readline()
-    TotalText = re.findall(r'<TEXT>(.*?)</TEXT>', totalDoc)
-
-    for x in range(len(TotalText)):
-        TotalText[x] = str(TotalText[x]).strip()
-        # Taking the text in between text tags and
-        # ([a-z]*[A-Z]*[0-9]*-*_*)\d+(-*[a-z]*[A-Z]*[0-9]*-*_*)
-        # TotalText[x] = re.sub("\w+(?:-\w+)+", " ", TotalText[x])
-        # TotalText[x] = str(filter(lambda c: not c.isdigit(), TotalText[x]))
-        # Removing workds with numbers in it or with hyphane
-        TotalText[x] = re.sub("\w*-*\d+-*\w*", " ", TotalText[x])
-        # Removing numbers if any present
-        TotalText[x] = re.sub("\d+", " ", TotalText[x])
-        # Removing all non alphanumeric elements along with _
-        TotalText[x] = re.sub("\W+", " ", TotalText[x])
-        # Finally converting all the words to lowercase
-        lowercaseString = TotalText[x].lower()
-        # splitting the sting along the space
-        wordlist = re.split('\s+', lowercaseString)
-        # Checking if the words in the list are present in stopWordList loaded to remove them
-        for y in range(len(stopWordList)):
-            if stopWordList[y] in wordlist:
-                wordmatched = stopWordList[y]
-                wordlist = list(filter(lambda x: x != wordmatched, wordlist))
-
-        stemmedList = []
-        for word in wordlist:
-            stemmedList.append(ps.stem(word))
-        # Removing any empty files
-        stemmedList = list(filter(None, stemmedList))
-        FinalWordList = FinalWordList + stemmedList
-    return FinalWordList, docnumListForEachFile
-
-
-
 # For loop iterates thorugh all the files from ft911_1 to ft9111_15
 extractedTextList = []
 extractedDocNumList = []
 for i in range(15):
     filepath = str(currentDirectory) + '/ft911/ft911_' + str(i + 1)
-    TextList, docNumlist = extractingdata(filepath)
+    TextList, docNumlist = extractingdata(filepath,stopWordList)
     # Extracting all the text into list and documnet number to another for all the files present
     extractedTextList = extractedTextList + TextList
     extractedDocNumList = extractedDocNumList + docNumlist
@@ -116,73 +67,13 @@ for DocNumString in extractedDocNumList:
     DocCounter = DocCounter + 1
 
 # Initializing the forward index text file
-forward_file = open("forward_index.txt", "w")
-
-# This  method is implemented for building the forward index for each docs
-def indexingEachTerm(filepathdoc):
-    global docCountForIndex
-    totalDoc = ""
-    FinalWordList = []
-    docnumListForEachFile = []
-    with open(filepathdoc) as fp:
-        line = fp.readline()
-        counter = 1
-        while line:
-            stripedString = line.strip() + " "
-            totalDoc = totalDoc + stripedString
-            if "<DOCNO>" in stripedString:
-                docnum = re.search(r'<DOCNO>(.*?)</DOCNO>', stripedString).group(1)
-                docnumListForEachFile.append(docnum)
-                counter = counter + 1
-            line = fp.readline()
-    TotalText = re.findall(r'<TEXT>(.*?)</TEXT>', totalDoc)
-
-    for x in range(len(TotalText)):
-        print(x)
-        cnt = collections.Counter()
-        TotalText[x] = str(TotalText[x]).strip()
-        # Removing workds with numbers in it or with hyphane
-        TotalText[x] = re.sub("\w*-*\d+-*\w*", " ", TotalText[x])
-        # Removing numbers if any present
-        TotalText[x] = re.sub("\d+", " ", TotalText[x])
-        # Removing all non alphanumeric elements along with _
-        TotalText[x] = re.sub("\W+", " ", TotalText[x])
-        # Finally converting all the words to lowercase
-        lowercaseString = TotalText[x].lower()
-        # splitting the sting along the space
-        wordlist = re.split('\s+', lowercaseString)
-        # Checking if the words in the list are present in stopWordList loaded to remove them
-        for y in range(len(stopWordList)):
-            if stopWordList[y] in wordlist:
-                wordmatched = stopWordList[y]
-                wordlist = list(filter(lambda x: x != wordmatched, wordlist))
-        # FinalWordList = FinalWordList + wordlist
-        # FinalWordList = list(filter(None, FinalWordList))
-        ps = PorterStemmer()
-        stemmedList = []
-        # Stemming the words
-        for word in wordlist:
-            stemmedList.append(ps.stem(word))
-        stemmedList = list(filter(None, stemmedList))
-        #frequency counting using counter method from collections
-        for wordmatched in stemmedList:
-            cnt[wordmatched] += 1
-        tokendict = dict(cnt)
-        index_map = {}
-        # building forward index
-        for key, value in tokendict.items():
-            index_map[word_dict[key]] = value
-        forward_index_dict[docCountForIndex]= index_map
-        docCountForIndex = docCountForIndex + 1
-
-    return forward_index_dict
-
+forward_file = open("files\\forward_index.txt", "w")
 
 currentDirectory = pathlib.Path('.')
 # For loop iterates thorugh all the files from ft911_1 to ft9111_15
 for i in range(15):
     filepath = str(currentDirectory) + '/ft911/ft911_' + str(i + 1)
-    forwardIndex = indexingEachTerm(filepath)
+    forwardIndex = indexingEachTerm(filepath,stopWordList,word_dict)
 
 # for x in range(len(word_dict) + 1):
 #     print(x)
@@ -192,9 +83,11 @@ for i in range(15):
 #             if(innerKey == x):
 #                 intermediate_dict[key] = innerValue
 #     inverted_index_dict[x] = intermediate_dict
+
+
 #Implemented inverted index using forward index
 inv_indx = defaultdict(int)
-for key, value in forward_index_dict.items():
+for key, value in forwardIndex.items():
     print(key)
     for innerkey, innervalue in value.items():
         intermediate_dict = {}
@@ -206,12 +99,14 @@ for key, value in forward_index_dict.items():
             intermediate_dict.update({key: innervalue})
             inv_indx[innerkey] = intermediate_dict
 
+
 #sorting inner elements in forward index
-for key, value in forward_index_dict.items():
+for key, value in forwardIndex.items():
     intermediate_forward_dict = {}
     for innerkey in sorted(value.items()):
         intermediate_forward_dict.update({innerkey[0]: value[innerkey[0]]})
     sortedForwardIndex.update({key : intermediate_forward_dict})
+
 
 #sorting inverted index and its inner elements
 for key in sorted(inv_indx.items()):
@@ -223,7 +118,7 @@ for key in sorted(inv_indx.items()):
 
 
 # Writting the token and its index into text file
-text_file = open("parser_output.txt", "w")
+text_file = open("files\\parser_output.txt", "w")
 for key, value in word_dict.items():
     text_file.write(str(value) + "         " + str(key) + '\n')
 
@@ -231,12 +126,12 @@ for key, value in word_dict.items():
 for key, value in docNum_dict.items():
     text_file.write(str(value) + "         " + str(key) + '\n')
 
-# Then writting the doc number  and its index into same file
+# Writting forward index to csv file
 for key, value in sortedForwardIndex.items():
     forward_file.write(str(key) + "         " + str(value) + '\n')
 
-inverted_file = open("inverted_index.txt", "w")
-# Then writting the doc number  and its index into same file
+inverted_file = open("files\\inverted_index.txt", "w")
+# Writting inverted index to csv file
 for key, value in sortedInvertedIndex.items():
     inverted_file.write(str(key) + "         " + str(value) + '\n')
 
@@ -278,39 +173,7 @@ Title = re.findall(r'<title>(.*?)<desc>', totalDoc)
 Description = re.findall(r'<desc> Description:(.*?)<narr>', totalDoc)
 Narrative = re.findall(r'<narr> Narrative:(.*?)</top>', totalDoc)
 
-#This method extracts the qurery elements in each column of query and saves as list of elements in dictionary
-def extractDifferentQuery(TotalText):
-    QueryCountForIndex = 1
 
-    for x in range(len(TotalText)):
-        cnt = collections.Counter()
-        TotalText[x] = str(TotalText[x]).strip()
-        TotalText[x] = re.sub("\w*-*\d+-*\w*", " ", TotalText[x])
-        # Removing numbers if any present
-        TotalText[x] = re.sub("\d+", " ", TotalText[x])
-        # Removing all non alphanumeric elements along with _
-        TotalText[x] = re.sub("\W+", " ", TotalText[x])
-        # Finally converting all the words to lowercase
-        lowercaseString = TotalText[x].lower()
-        # splitting the sting along the space
-        wordlist = re.split('\s+', lowercaseString)
-        # Checking if the words in the list are present in stopWordList loaded to remove them
-        for y in range(len(stopWordList)):
-            if stopWordList[y] in wordlist:
-                wordmatched = stopWordList[y]
-                wordlist = list(filter(lambda x: x != wordmatched, wordlist))
-        stemmedList = []
-        for word in wordlist:
-            stemmedList.append(ps.stem(word))
-        # Removing any empty files
-        stemmedList = list(filter(None, stemmedList))
-        # frequency counting using counter method from collections
-        for wordmatched in stemmedList:
-            cnt[wordmatched] += 1
-        tokendict = dict(cnt)
-        query_forward_index_dict[QueryCountForIndex] = tokendict
-        QueryCountForIndex = QueryCountForIndex + 1
-    return query_forward_index_dict
 ###################################################################################################################
 
 # extracting the relavent elements from main.qerls file for calculating the precision and recall
@@ -355,11 +218,11 @@ def calPrecisionRecal(scorecalculated,queryNumberToEvaluateOn):
 
 ####################################################################################################################
 ##############################Cosine similarity score calculation for Title only####################################
-queryResults = open("OnlyTitleResults.txt", "w")
+queryResults = open("files/OnlyTitleResults.txt", "w")
 N = len(sortedForwardIndex)
 querycount = 0
 score.clear()
-QueryWithTitle = extractDifferentQuery(Title)
+QueryWithTitle = extractDifferentQuery(Title,stopWordList)
 for queryNum in QueryWithTitle.keys():
     for queryTerm, tfQ in QueryWithTitle[queryNum].items():
         queryId = word_dict[queryTerm]
@@ -383,15 +246,15 @@ for queryNum in QueryWithTitle.keys():
 #############################################################################################################################
 ##############################Cosine similarity score calculation for Title and Description####################################
 
-queryResultWithDescription = open("titleWithDescriptionResults.txt", "w")
+queryResultWithDescription = open("files/titleWithDescriptionResults.txt", "w")
 queryDesc = []
 for x in range(len(Title)):
     stringconc1 = str(Title[x] + " " + Description[x])
     queryDesc.append(stringconc1)
-query_forward_index_dict.clear()
+# query_forward_index_dict.clear()
 querycount = 0
 score.clear()
-QueryWithTitleDescription = extractDifferentQuery(queryDesc)
+QueryWithTitleDescription = extractDifferentQuery(queryDesc,stopWordList)
 
 for queryNum in QueryWithTitleDescription.keys():
     for queryTerm, tfQ in QueryWithTitleDescription[queryNum].items():
@@ -415,15 +278,15 @@ for queryNum in QueryWithTitleDescription.keys():
     querycount = querycount + 1
 ##################################################################################################################
 ############################## Cosine similarity score calculation for Title and Narrative ####################################
-queryResultWithNarrative = open("titleWithNarrativeResults.txt", "w")
+queryResultWithNarrative = open("files/titleWithNarrativeResults.txt", "w")
 titleNar = []
 for x in range(len(Title)):
     stringconc2 = str(Title[x] + " " + Narrative[x])
     titleNar.append(stringconc2)
-query_forward_index_dict.clear()
+# query_forward_index_dict.clear()
 querycount = 0
 score.clear()
-QueryWithTitleNarrative = extractDifferentQuery(titleNar)
+QueryWithTitleNarrative = extractDifferentQuery(titleNar,stopWordList)
 
 for queryNum in QueryWithTitleNarrative.keys():
     for queryTerm, tfQ in QueryWithTitleNarrative[queryNum].items():
@@ -526,7 +389,7 @@ while(exit):
                 queryGiven.append(stringconc)
 
         indexOfQuery = queryNumber.index(queryNumberToEvaluate) + 1
-        QueryIndex = extractDifferentQuery(queryGiven)
+        QueryIndex = extractDifferentQuery(queryGiven,stopWordList)
         N = len(sortedForwardIndex)
         for queryTerm, tfQ in QueryIndex[indexOfQuery].items():
             queryId = word_dict[queryTerm]
